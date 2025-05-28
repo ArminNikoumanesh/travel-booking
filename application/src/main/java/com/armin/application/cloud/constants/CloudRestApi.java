@@ -9,6 +9,7 @@ public abstract class CloudRestApi {
 
     private static final String CLOUD_CONFIG = "/cloud/config-settings";
     public static final String ACCOUNT = CLOUD_CONFIG + "/account";
+    public static final String REFRESH = CLOUD_CONFIG + "/refresh";
     public static final String ADDRESS = CLOUD_CONFIG + "/address";
     public static final String ORDER = CLOUD_CONFIG + "/order";
     public static final String ORDER_MESSAGE = CLOUD_CONFIG + "/order-message";

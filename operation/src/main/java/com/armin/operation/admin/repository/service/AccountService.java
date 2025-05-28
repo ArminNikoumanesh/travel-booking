@@ -8,12 +8,14 @@ import com.armin.database.user.statics.UserMedium;
 import com.armin.messaging.notification.bl.NotificationService;
 import com.armin.messaging.notification.dto.Notification;
 import com.armin.operation.admin.model.dto.account.*;
-import com.armin.operation.admin.model.dto.common.*;
+import com.armin.operation.admin.model.dto.common.UserProfileEditIn;
+import com.armin.operation.admin.model.dto.common.UserProfileIn;
+import com.armin.operation.admin.model.dto.common.UserProfileOut;
+import com.armin.operation.admin.model.dto.common.UserRegisterIn;
 import com.armin.operation.admin.model.dto.profile.ProfileImageIn;
 import com.armin.operation.admin.model.dto.profile.ProfileImageOut;
 import com.armin.operation.admin.model.object.HavePassword;
 import com.armin.operation.admin.model.object.LoginInfo;
-import com.armin.operation.admin.repository.dao.AccountDao;
 import com.armin.operation.security.admin.dto.session.UserSessionIn;
 import com.armin.operation.security.admin.dto.session.UserSessionOut;
 import com.armin.operation.security.admin.repository.service.UserSessionService;
@@ -25,7 +27,6 @@ import com.armin.utility.bl.ValidationEngine;
 import com.armin.utility.bl.otp.IOtpService;
 import com.armin.utility.file.bl.IFileService;
 import com.armin.utility.object.*;
-import com.armin.utility.repository.odm.model.entity.OperationAction;
 import com.armin.utility.statics.enums.SmsType;
 import org.apache.commons.lang3.StringUtils;
 import org.modelmapper.ModelMapper;
@@ -56,14 +57,12 @@ public class AccountService {
     private final ApplicationProperties applicationProperties;
     private final NotificationService notificationService;
     private final IFileService fileService;
-    private final AccountDao accountDao;
-    private final AntiForgeryService antiForgeryService;
 
     @Autowired
     public AccountService(UserSessionService userSessionService, IOtpService otpService, UserService userService,
                           HashService hashService, JwtService jwtService, ModelMapper modelMapper,
                           ApplicationProperties applicationProperties, NotificationService notificationService,
-                          IFileService fileService, AccountDao accountDao, AntiForgeryService antiForgeryService) {
+                          IFileService fileService) {
         this.userSessionService = userSessionService;
         this.otpService = otpService;
         this.userService = userService;
@@ -73,8 +72,6 @@ public class AccountService {
         this.applicationProperties = applicationProperties;
         this.notificationService = notificationService;
         this.fileService = fileService;
-        this.accountDao = accountDao;
-        this.antiForgeryService = antiForgeryService;
     }
 
     private LoginOut login(UserEntity userEntity, String uniqueId, String firebaseToken, ClientType clientType, ClientInfo clientInfo) throws SystemException {
@@ -112,6 +109,7 @@ public class AccountService {
             throw new SystemException(SystemError.USER_NOT_ACTIVE, "userId:" + userEntity.getId(), 2056);
         }
 
+        checkUserSuspension(userEntity);
         String securePassword = this.hashService.hash(model.getPassword());
         if (!securePassword.equals(userEntity.getHashedPassword())) {
             userEntity.setAccessFailedCount(userEntity.getAccessFailedCount() + 1);
@@ -165,6 +163,7 @@ public class AccountService {
         if (userSessionEntity == null) {
             throw new SystemException(SystemError.USER_NOT_LOGIN, "username:" + userEntity.getMobile(), 3005);
         }
+        checkUserSuspension(userEntity);
         TokenInfo tokenInfo = jwtService.refresh(token, userSessionEntity.getClientType());
         return new LoginOut(userEntity, tokenInfo);
     }
@@ -283,6 +282,7 @@ public class AccountService {
     }
 
     private LoginOut updateRegisteredUser(UserEntity userEntity, VerifyOtpIn model, ClientInfo clientInfo, LoginInfo loginInfo) throws SystemException {
+        checkUserSuspension(userEntity);
         userEntity.setAccessFailedCount(0);
         if (loginInfo.isMobile() && !userEntity.isMobileConfirmed()) {
             userEntity.setMobileConfirmed(true);
@@ -316,6 +316,7 @@ public class AccountService {
 
     public void forgotPassword(ForgotPasswordIn model) throws SystemException {
         UserEntity user = userService.getEntityByMobileEmail(model.getMobile(), model.getEmail());
+        checkUserSuspension(user);
         if (user != null)
             sendOtp(modelMapper.map(model, SendOtpIn.class));
     }
@@ -431,7 +432,6 @@ public class AccountService {
     }
 
     public void sendOtp(SendOtpIn model) throws SystemException {
-        antiForgeryService.validate(model.getToken());
         String username = model.getMobile() == null ? model.getEmail() : model.getMobile();
         UserEntity userEntity = userService.getEntityByUsername(username);
         if (userEntity != null && userEntity.isSuspended()) {
@@ -688,5 +688,16 @@ public class AccountService {
 
     public ProfileImageOut getProfileImage(int userId) throws SystemException {
         return new ProfileImageOut(userService.getEntityById(userId, INCLUDE));
+    }
+
+    private void checkUserSuspension(UserEntity userEntity) throws SystemException {
+        if (userEntity != null) {
+            if (userEntity.isSuspended()) {
+                throw new SystemException(SystemError.USER_NOT_ACTIVE, "userId:" + userEntity.getId(), 2056);
+            }
+            if (userEntity.getLockExpired() != null && userEntity.getLockExpired().isAfter(LocalDateTime.now())) {
+                throw new SystemException(SystemError.USER_NOT_ACTIVE, "userId:" + userEntity.getId(), 3002);
+            }
+        }
     }
 }

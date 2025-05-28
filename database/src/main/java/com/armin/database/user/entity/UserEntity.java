@@ -2,12 +2,13 @@ package com.armin.database.user.entity;
 
 
 import com.armin.database.user.statics.UserMedium;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.Cascade;
+import org.hibernate.annotations.UpdateTimestamp;
 
-import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
@@ -19,7 +20,7 @@ import java.util.Set;
 @NoArgsConstructor
 public class UserEntity {
     @Id
-    @Column(name = "ID_PK", scale = 0, precision = 10)
+    @Column(name = "ID_PK")
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "User_Sequence")
     @SequenceGenerator(name = "User_Sequence", sequenceName = "USER_SEQ", allocationSize = 50)
     private int id;
@@ -72,7 +73,7 @@ public class UserEntity {
     @Column(name = "CREATED", nullable = false)
     private LocalDateTime created;
     @Basic
-    @Column(name = "ACCESS_FAILED_COUNT", scale = 0, precision = 10, nullable = false)
+    @Column(name = "ACCESS_FAILED_COUNT", nullable = false)
     private int accessFailedCount;
     @Basic
     @Column(name = "SUSPENDED", nullable = false)
@@ -86,10 +87,13 @@ public class UserEntity {
     @Basic
     @Column(name = "REGISTERED", nullable = false, columnDefinition = "boolean default false")
     private boolean registered;
+    @Basic
+    @Column(name = "LAST_UPDATE")
+    @UpdateTimestamp
+    private LocalDateTime lastUpdate;
 
     @OneToOne(optional = false, cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "userEntity")
     private ProfileEntity profile;
-
     @OneToMany(mappedBy = "userEntity", orphanRemoval = true, cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @Cascade(org.hibernate.annotations.CascadeType.ALL)
     private Set<SecurityUserRoleRealmEntity> roleRealms = new HashSet<>();

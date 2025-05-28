@@ -7,6 +7,8 @@ import com.armin.application.cloud.service.CloudConfigService;
 import com.armin.utility.object.SystemException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import org.json.JSONException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -16,8 +18,6 @@ import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.validation.Valid;
 import java.io.IOException;
 
 import static com.armin.utility.object.ClientIpInfo.getMainIP;
@@ -45,5 +45,12 @@ public class CloudConfigController {
     @PutMapping(path = CloudRestApi.ACCOUNT, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<AccountConfig> updateIdentitySettings(@Valid @RequestBody AccountConfig model, BindingResult bindingResult, HttpServletRequest httpServletRequest) throws JSONException, SystemException, IOException {
         return new ResponseEntity<>(cloudConfigService.updateAccountConfig(model, getMainIP(httpServletRequest)), HttpStatus.OK);
+    }
+
+    @Operation(description = "refresh cloud config")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @GetMapping(path = CloudRestApi.REFRESH, produces = MediaType.APPLICATION_JSON_VALUE)
+    public void refreshProperties(HttpServletRequest httpServletRequest) throws SystemException, IOException {
+        cloudConfigService.refreshProperties();
     }
 }

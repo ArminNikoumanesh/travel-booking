@@ -12,8 +12,7 @@ VALUES (150001, '/admin/cloud/config-settings/account', 'GET'),
        (150003, '/admin/cloud/config-settings/security', 'GET'),
        (150004, '/admin/cloud/config-settings/security', 'PUT'),
        (150005, '/admin/cloud/config-settings/all', 'GET'),
-       (150006, '/admin/cloud/config-settings/working-hours', 'GET'),
-       (150007, '/admin/cloud/config-settings/working-hours', 'PUT');
+       (150006, '/admin/cloud/config-settings/refresh', 'GET');
 
 -- Cloud Config Permission
 -- Id Range 250001 - 250999
@@ -21,8 +20,7 @@ INSERT
 INTO SECURITY_PERMISSION(ID_PK, PARENT_ID_FK, NODE_TYPE, TRAVERSAL, NAME, TYPE)
 VALUES (250001, null, 1, true, 'cloud-config', 'ADMIN'),
        (250002, 250001, 10, true, 'cloud-config.account', 'ADMIN'),
-       (250003, 250001, 10, true, 'cloud-config.security', 'ADMIN'),
-       (250004, 250001, 10, true, 'cloud-config.working-hours', 'ADMIN');
+       (250003, 250001, 10, true, 'cloud-config.security', 'ADMIN');
 
 INSERT
 INTO SECURITY_PERMISSION_REST(PERMISSION_ID_FK, REST_ID_FK)
@@ -31,5 +29,4 @@ VALUES (250002, 150001),
        (250003, 150003),
        (250003, 150004),
        (250001, 150005),
-       (250004, 150006),
-       (250004, 150007);
+       (250001, 150006);

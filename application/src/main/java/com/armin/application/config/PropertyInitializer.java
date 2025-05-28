@@ -56,18 +56,12 @@ public class PropertyInitializer {
     public void updateAllProperties(ApplicationProperties properties) throws IOException, SystemException {
         fileInitializer.updateProperties(properties);
         dbInitializer.updateProperties(properties);
-//        elInitializer.updateProperties(properties);
         refreshProperties();
-//        sendRefreshEvent();
     }
 
     public void refreshProperties() throws SystemException, IOException {
         ApplicationProperties applicationProperties = (ApplicationProperties) beanFactory.getBean("applicationProperties");
         modelMapper.map(initialGlobalProperties(), applicationProperties);
     }
-
-//    public void sendRefreshEvent() {
-//        kafkaTemplate.send(TOPIC, name);
-//    }
 
 }

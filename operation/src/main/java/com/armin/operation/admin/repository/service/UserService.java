@@ -42,10 +42,6 @@ import static com.armin.utility.bl.NormalizeEngine.checkParsableKeyword;
  * <p>
  * Exceptions error code range: 3101-3150
  *
- * @author Omid Sohrabi
- * @author Mohammad Yasin Sadeghi
- * @version 2.0
- * @since 2019-07-05
  */
 
 @Service

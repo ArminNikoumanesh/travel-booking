@@ -20,7 +20,5 @@ public class BaseApplicationProperties {
     private EmailProvider emailProvider;
     private Boolean smsOtpSandbox;
     private FileCrud fileCrud;
-    private List<String> widgetAreas;
     private OpenApiConfig openApiConfig;
-    private MinioConfig minioConfig;
 }
