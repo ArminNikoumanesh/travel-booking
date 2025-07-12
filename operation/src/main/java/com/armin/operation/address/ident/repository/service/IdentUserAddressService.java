@@ -106,8 +106,7 @@ public class IdentUserAddressService {
 
     public ReportFilter filter(UserAddressFilter filter) {
         ReportOption reportOption = new ReportOption();
-        if (filter instanceof UserAddressPageableFilter) {
-            UserAddressPageableFilter pageableFilter = (UserAddressPageableFilter) filter;
+        if (filter instanceof UserAddressPageableFilter pageableFilter) {
             reportOption.setPageSize(pageableFilter.getSize());
             reportOption.setPageNumber(pageableFilter.getPage());
             reportOption.setSortOptions(pageableFilter.getSort());
